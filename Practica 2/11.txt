@@ -1,0 +1,27 @@
+sem mutexP = 1; mutexE = 0;
+
+int size = 0;
+
+Cola cola;
+
+Process Empleado{
+    int aux;
+
+    for(int i = 0; i < 10; i++){
+        P(mutexE)
+        for(int j = 0; i < 5; j++){
+            VacunarPersona(cola.pop(aux));
+        }
+    }
+}
+
+Process Persona[id: 1..50]{
+    P(mutexP);
+    cola.push(id);
+    size++;
+    if(size==5){
+        V(mutexE);
+        size = 0;
+    }
+    V(mutexP);
+}

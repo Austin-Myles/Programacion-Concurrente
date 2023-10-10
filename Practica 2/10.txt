@@ -1,0 +1,17 @@
+sem camiones = 7; sem tipoMaiz = 5; sem tipoTrigo = 5;
+
+Process CamionTrigo[idT: 1..T]{
+    P(tipoTrigo);
+    P(camiones);
+    descargarCereal();
+    V(camiones);
+    V(tipoTrigo);
+}
+
+Process CamionMaiz[idM: 1..M]{
+    P(tipoMaiz);
+    P(camiones);
+    descargarCereal();
+    V(camiones);
+    V(tipoMaiz);
+}

@@ -1,0 +1,59 @@
+/*
+Resolver con monitores la siguiente situación. En la guardia de traumatología
+de un hospital trabajan 5 médicos y una enfermera. A la guardia acuden P
+Pacientes que al llegar se dirigen a la enfermera para que le indique a que
+médico se debe dirigir y cuál es su gravedad (entero entre 1 y 10). Cuando
+tiene estos datos se dirige al médico correspondiente y espera hasta que lo
+termine de atender para retirarse. Cada médico atiende a sus pacientes en
+orden de acuerdo a la gravedad de cada uno.
+Nota: maximizar la concurrencia.
+*/
+
+Process Paciente[id:1..P]{
+    int gravedad = gravedad;
+    int med;
+
+    Guardia.acudir(gravedad, med);
+    Atencion[med].atenderse(gravedad);
+    
+}
+
+Process Enfermera{
+    for(int i=0; i < P; i++){
+        Guardia.determinar;
+    }
+}
+
+Monitor Guardia{
+    cond espera, llegada;
+    int grav;
+    int med;
+
+    Procedure acudir(var gravedad, var med){
+        signal(llegada);
+        wait(espera);
+        med = med;
+        gravedad = grav;
+    }
+
+    Procedure determinar(){
+        wait(llegada);
+        grav = asignarGravedad();
+        med = asignarMedico();
+        signal(espera);
+    }
+}
+
+
+Process Medico[id:1..5]{
+
+}
+
+Monitor Atencion[id:1..5]{
+    cond cola[P];
+    int pacientes[P] = ([P],0);
+    bool libre = True;
+    int espera = 0;
+
+
+}

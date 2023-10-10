@@ -1,0 +1,48 @@
+
+sem mutex[4] = ([4]1); ; mutexC[4] = ([4]0); concurso[4] = ([4]0), notas[100] = ([100]0);
+int cantConcurso[4] = ([4]0), notasCon[100] = ([100]0);
+cola cola[4];
+
+Process Persona[id:1..100]{
+    int aux= obtenerNumConcurso();
+
+    p(mutex[aux]);
+    cantConcurso[aux]++;
+    if(cantConcurso[aux]==25){
+        v(mutexC[aux]);
+    }
+    v(mutex[aux]);
+    p(concurso[aux]);
+
+    hacerExamen(aux);
+
+    p(mutex[aux]);
+    cola[aux].push(id);  
+    v(mutex[aux]);
+
+    v(mutexC[aux]);
+
+    p(notas[id]);
+
+    //Ver resultado :p
+}
+
+Process Coordinador[id:1..4]{
+
+
+    p(mutexC[id]);
+    for(int i = 0; i<25; i++){
+        v(concurso[id]);
+    }   
+    
+    for(int i=0; i<25; i++){
+        p(mutexC[id]);
+        
+        p(mutex[id]);
+        aux = cola.pop();
+        v(mutex[id]);
+
+        notasCon[aux] == corregir();
+        v(notas[aux]);
+    }
+}

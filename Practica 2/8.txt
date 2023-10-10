@@ -1,0 +1,38 @@
+sem mutex = 1, empleadosInicio[E] = [(E) 0];
+int piezasHechas = 0; empleadosPresentes = 0; cantPiezasEmpleado[E] = [(E) 0];
+
+
+Process Empleado[id: 1..E]{
+    Pieza p;
+    int maxId = 0; max = -1;
+
+    P(mutex);
+    //marca llegada de empleado 
+    empleadosPresentes++;
+    if(empleadosPresentes==E){
+        for(int i = 0; i < E; i++) V(empleadosInicio[i]);
+    }
+    V(mutex);
+
+    P(empleadosInicio[id]);
+    
+    while(piezasHechas < T){
+        producirPieza(p);
+        cantPiezasEmpleado[id]++;
+        P(mutex);
+        piezasHechas++;
+        V(mutex);
+    }
+
+    //Verificar Ganador
+    for(int i = 0; i < E; i++){
+        if(max < cantPiezasEmpleado[i]){
+            maxId = i;
+            max = cantPiezasEmpleado[i];
+        }
+    }
+
+    if(id == max){
+        recibirPremio();
+    }
+}

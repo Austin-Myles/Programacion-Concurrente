@@ -1,0 +1,79 @@
+Existe una comisión de 50 alumnos que deben realizar tareas de a pares, las cuales son
+corregidas por un JTP. Cuando los alumnos llegan, forman una fila. Una vez que están todos
+en fila, el JTP les asigna un número de grupo a cada uno. Para ello, suponga que existe una
+función AsignarNroGrupo() que retorna un número “aleatorio” del 1 al 25. Cuando un alumno
+ha recibido su número de grupo, comienza a realizar su tarea. Al terminarla, el alumno le avisa
+al JTP y espera por su nota. Cuando los dos alumnos del grupo completaron la tarea, el JTP
+les asigna un puntaje (el primer grupo en terminar tendrá como nota 25, el segundo 24, y así
+sucesivamente hasta el último que tendrá nota 1). Nota: el JTP no guarda el número de grupo
+que le asigna a cada alumno.
+
+Process Alumno[i:1..50]{
+    
+    int nroGrupo, puntaje
+    
+
+    Comision.llegar(id,nroGrupo);
+    Comision.entregarTarea(id,nroGrupo,puntaje);
+
+}
+
+Process JTP {
+
+    Array entrega[25];
+    int notas= 25;
+
+    Comision.iniciar();
+
+    for(int i = 0; i<50; i++){
+        Comision.corregir(notas,entrega);
+    }
+}
+
+Monitor Comision{
+
+    cond inicio,alumnoCond
+    int cant=0, auxId, puntajeAux;
+    Array grupo[50], notasGrupos[25];
+    cola alumnosFila, entregados,notasEntregadas[25];
+
+    Procedure llegar(in int id,out int nroGrupo){
+        cant++;
+        alumnosFila.push(id);
+        if(cant == 50){
+            signal(inicio)
+        }
+        wait(alumnoCond);
+        nroGrupo = grupo[id];
+    }
+
+    Procedure iniciar(){
+        if(cant != 50){
+            wait(inicio);
+        }
+        for(int i=0; i<50; i++){
+            auxId= alumnosFila.pop();
+            grupo[auxId] = AsignarNroGrupo();
+        }
+    }
+
+    Procedure entregarTarea(in int id, nroGrupo, out int puntaje){
+        entregados.push(nroGrupo);
+        signal(entrego);
+        wait(notasEntregadas[nroGrupo]);
+        puntaje = puntajeAux;
+    }
+
+    Procedure corregir(In int notas, entrega[25]){
+        if(entregados.empty()){
+            wait(entrego);
+        }
+        grupoAux = entregados.pop();
+        entrega[grupoAux]++;
+        if(entrega[grupoAux] == 2){
+            notasGrupos[grupoAux] = notas;
+            notas--;
+            signal_all(notasEntregadas[nroGrupo]);
+        }
+    }
+}

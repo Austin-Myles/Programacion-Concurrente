@@ -1,0 +1,78 @@
+Resolver con SEMÁFOROS el siguiente problema. En una empresa hay UN
+Coordinador y 30 Empleados que formarán 3 grupos de 10 empleados cada uno.
+Cada grupo trabaja en una sección diferente y debe realizar 345 unidades de un
+producto. Cada empleado al llegar se dirige al coordinador para que le indique el
+número de grupo al que pertenece y una vez que conoce este dato comienza a trabajar
+hasta que se han terminado de hacer las 345 unidades correspondientes al grupo (cada
+unidad es hecha por un único empleado). Al terminar de hacer las 345 unidades los
+10 empleados del grupo se deben juntar para retirarse todos juntos. El coordinador
+debe atender a los empleados de acuerdo al orden de llegada para darle el número de
+grupo (a los 10 primeros que lleguen se le asigna el grupo 1, a los 10 del medio el 2,
+y a los 10 últimos el 3). Cuando todos los grupos terminaron de trabajar el
+coordinador debe informar (imprimir en pantalla) el empleado que más unidades ha
+realizado (si hubiese más de uno con la misma cantidad máxima debe informarlos a
+todos ellos).
+NOTA: maximizar la concurrencia; suponga que existe una función Generar() que simula
+la elaboración de una unidad de un producto.
+
+int unidades[3] = ([3],345);
+int grupos[30] = ([30],0);
+int produccion[30] = ([30],0);
+cola empleado, terminados;
+sem mutex = 1; mutexAsignar = 0; mutexEmpleado = 0;
+sem terminamos[3] = ([3]0), producir[3] = ([3]1);
+sem salida[3]= ([3]0);
+
+Process Empleado[id:1..30]{
+    p(mutex);
+    cola.push(id);
+    v(mutex);
+
+    v(mutexAsignar);
+    p(mutexEmpleado);
+
+    while(unidades[grupo[id]] > 0 ){
+        p(producir[grupo[id]]);
+        unidades[grupo[id]]--;
+        v(producir[grupo[id]]);
+        produccion[id]++;
+        if(unidades[grupo[id]] == 0){
+            p(mutex);
+            terminados.push(grupo[id]);
+            v(mutex);
+            v(terminamos[grupo[id]]);
+        }
+    }
+
+    p(salida[grupo[id]]);
+}
+
+Process Coordinador{
+
+    for(int i = 0; i<30; i++){
+        p(mutexAsignar);
+        p(mutex);
+        grupos[cola.pop()] = (i div 10);
+        v(mutex);
+        v(mutexEmpleado);
+    }
+
+    for(int i = 0; i< 3; i++){
+        p(terminamos);
+        p(mutex);
+        grupo = terminados.pop();
+        v(mutex);
+
+        for(int i = 0; i < 10; i++){
+            v(salida[grupo]);
+        }
+    }
+
+    int max = -1; maxid = -1;
+    for(int i=0; i< 30; i++ ){
+        if(max < produccion[i]){
+            max = produccion[i];
+            maxid = i;
+        }
+    }
+}

@@ -1,0 +1,59 @@
+
+sem mutex = 1, alumnoFull = 0, alumnoInicio[N] = [(N) = 0];
+sem semgrupo[10] = [(10) 0], finGrupo = 1;
+
+int grupos[10] = [(10) 0]; int nota[10] = [(10) 0];
+sem 
+int cantAux= 0;
+Cola cola;
+
+Process Alumno [id: 1..50]
+{
+    Tarea t;
+    P(mutex);
+    elegirTarea(t);
+    cantAux++;
+    if(cantAux == 50){
+        V(alumnoFull);
+    }
+    V(mutex);
+
+    P(alumnoInicio[id]);
+    
+    realizarTarea(t);
+
+    P(mutex);
+    grupos[t]++;
+    if(grupos[t] == 10){
+        V(finGrupo);
+        cola.push(t);
+    }
+    V(mutex);
+
+    P(semgrupo[t]);
+
+    recibirNota();
+
+    V(semgrupo[t]);
+}
+
+Process Profesor{
+    int aux = 10;
+
+    P(alumnoFull);
+
+    for(int i = 0; i < N; i++){
+        V(alumnoInicio[i]);
+    }
+
+    for(int i = 0; i < 10; i++){
+        P(finGrupo)
+        int grupo;
+        cola.pop(grupo);
+        nota[grupo] = aux;
+        aux--;
+        for(int j = 0; i < 10; j++){
+            V(semgrupo[grupo]);
+        }
+    }
+}

@@ -1,0 +1,157 @@
+En un corralón de materiales se deben atender a N clientes de acuerdo con el orden de llegada.
+Cuando un cliente es llamado para ser atendido, entrega una lista con los productos que
+comprará, y espera a que alguno de los empleados le entregue el comprobante de la compra
+realizada.
+a- Resuelva considerando que el corralón tiene un único empleado.
+b- Resuelva considerando que el corralón tiene E empleados (E > 1).
+
+a-
+
+Process Cliente[id:1..N]{
+
+    List productos;
+    Comprobante comp;
+
+    //El cliente entra al corralón, espera y es atendido. Luego de eso espera que el empleado
+    le entregue el comprobante
+    Corralon.entrar();
+    Corralon.atencion(productos,comp);
+
+}
+
+Process Empleado{
+
+    //El empleado espera a atender a un cliente, lo llama, recibe la lista de productos
+    y le entrega un comprobante
+    while(true){
+        Corralon.atender();
+    }
+    
+}
+
+Monitor Corralon{
+    cond eLibre, esperaC, atendido;
+    bool libre = True, esperando;
+    int espera = 0;
+    List auxProd;
+    Comprobante auxComp;
+
+    Procedure entrar(){
+        if(!libre){
+            espera++;
+            wait(esperaC);
+        }
+    }
+
+    Procedure atencion(in prod, out comp){
+        signal(eLibre);
+        wait(atendido);
+        auxProd = prod;
+        signal(eLibre);
+        wait(atendido);
+        comp = auxComp;
+        
+        if(espera != 0){
+            espera--;
+            signal(esperaC);
+        }
+        else{
+            libre=true;
+        }
+    }
+
+    Procedure atender(){
+        wait(eLibre);
+        signal(atendido);
+        wait(eLibre)
+        auxComp = generarComprobante(auxProd);
+        signal(atendido);
+    }
+}
+
+b-
+
+Process Cliente[id:1..N]{
+
+    int idE; //Va a guardar el ID del empleado que lo va a atender
+    List productos;
+    Comprobante comp;
+
+    //El cliente entra al corralón, espera y es atendido. Luego de eso espera que el empleado
+    le entregue el comprobante
+    Corralon.entrar(idE);
+    Atencion[idE].atencion(productos,comp);
+
+}
+
+
+Process Empleado[id:1..E]{
+
+    productos prod;
+    recibo rec;
+    //El empleado espera a atender a un cliente, lo llama, recibe la lista de productos
+    y le entrega un comprobante
+    while(true){
+        Corralon.proximo(id);
+        Atencion[id].atender(productos);
+        GenerarRecibo(prod,rec);
+        Atencion[id].enviarRecibo(rec);
+    }
+    
+}
+
+Monitor Corralon{
+    cola elibres;
+    cond esperaC;
+    int esperando = 0; cantLibres = 0;
+
+    Procedure entrar(OUT idE){
+        if(cantLibres == 0){
+            esperando++;
+            wait(esperaC);
+        }
+        else cantLibres--;
+        idE = elibres.pop();
+    }
+
+    Procedure proximo(IN idE){
+        elibres.push(idE);
+        if(esperando > 0){
+            esperando--;
+            signal(esperaC);
+        }
+        else{
+            cant_espera++;
+        }
+    }
+}
+
+Monitor Atencion[id:1..E]{
+    cond vcCliente, vcEmpleado;
+    recibo reciboAux;
+    lista listaAux;
+    boolean listo = false;
+
+    Procedure atencion(in productos, out comp){
+        listaAux = productos;
+        listo = True;
+        signal(vcEmpleado);
+        wait(vcCliente);
+        comp = reciboAux;
+        signal(vcEmpleado);
+    }
+
+    Procedure atender(out productos){
+        if(!listo){
+            wait(vcEmpleado);
+        }
+        productos = listaAux;
+    }
+
+    Procedure enviarRecibo(in rec){
+        reciboAux = rec;
+        signal(vcCliente);
+        wait(vcEmpleado);
+        listo = false;
+    }
+}

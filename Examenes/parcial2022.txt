@@ -1,0 +1,192 @@
+1. SEMÁFOROS. 
+Existen 15 sensores de temperatura y 2 módulos centrales de procesamiento. 
+Un sensor mide la temperatura cada cierto tiempo (función medir()), 
+la envía al módulo central para que le indique qué acción debe hacer (un número del 1 al 10) 
+(función determinar() para el módulo central) y la hace (función realizar()). 
+Los módulos atienden las mediciones por orden de llegada.
+
+#Intento 1
+
+sem mutex = 1, pedido = 0;
+cola temp
+
+Process Sensor[id:1..15]{
+    while(True){
+        p(mutex);
+        temp.push(determinar(medir()));
+        v(mutex);
+        v(pedido);
+    }
+}
+
+Process Modulo[id:1..2]{
+    while(True){
+        p(pedido);
+        p(mutex);
+        aux = temp.pop();
+        v(mutex);
+        realizar(aux);
+    }
+}
+
+#Intento 2
+
+sem mutex = 1, avisar = 0;
+cola temps;
+
+Process Sensor[id:1..15]{
+    while(True){
+        int temp = medir();
+        p(mutex);
+        temps.push(determinar(temp));
+        v(mutex);
+        v(avisar);
+    }
+}
+
+Process Modulo[id:1..2]{
+    while(True){
+        int accion;
+        p(avisar);
+        p(mutex);
+        accion = temps.pop();
+        v(mutex);
+        realizar(acción);
+    }
+}
+
+
+2. MONITORES. 
+Una boletería vende E entradas para un partido, y hay P personas (P>E) que quieren comprar. 
+Se las atiende por orden de llegada y la función vender() simula la venta. 
+La boletería debe informarle a la persona que no hay más entradas disponibles o devolverle el número de entrada si pudo hacer la compra.
+
+
+# Intento 1
+Process Persona[id:1..P]{
+    int num;
+    bool hayEntrada;
+
+    Boleteria.Entrar(hayEntrada);
+    if(hayEntrada){
+        Boleteria.Comprar(num);
+    }
+}
+
+Monitor Boleteria{
+    int esperando = 0, entradas = E;
+    cond cola;
+    bool disponible = True;
+
+
+    Procedure Entrar(OUT hayEntrada){
+        hayEntrada = (entradas > 0);
+        if(hayEntrada){
+            if(!disponible){
+                esperando++;
+                wait(cola);
+            }
+            else{
+                disponible = False;
+            }
+        }
+    }
+
+    Procedure Comprar(OUT num){
+        num = vender();
+        entradas--;
+
+        if(esperando > 0){
+            esperando--;
+            signal(cola);
+        }
+        else{
+            disponible = True;
+        }
+    }
+}
+
+#Intento 2
+
+Process Persona[id:1..P]{
+    
+    int num;
+    bool aux;
+
+    boletería.entrar(aux);
+    if(aux){
+        boletería.comprar(num);
+    }
+}
+
+Monitor Boleteria{
+    int espera = 0,entradas = E;
+    cond cola;
+    bool libre = True;
+
+    Procedure entrar(OUT aux){
+        aux = (entradas > 0);
+        if(aux){
+            if(!libre){
+                espera++;
+                wait(cola);
+            }
+            else{
+                libre = False;
+            }
+        }
+        else{
+            //Informar la situación
+        }
+    }
+
+    Procedure comprar(OUT num){
+        num = vender();
+        entradas--;
+        if(espera > 0){
+            espera--;
+            signal(cola);
+        }
+        else{
+            libre = True;
+        }
+    }
+}
+
+
+3. MONITORES. 
+Por un puente turístico puede pasar sólo un auto a la vez. Hay N autos que quieren pasar (función pasar()) y lo hacen por orden de llegada.
+
+Process Auto[id:1..N]{
+
+    Puente.entrar();
+    pasar();
+    Puente.salir();
+}
+
+Monitor Puente{
+
+    Cond cola;
+    int esperando = 0;
+    bool libre = True;
+
+    Procedure entrar(){
+        if(!libre){
+            esperando++;
+            wait(cola);
+        }
+        else{
+            libre = False;
+        }
+    }
+
+    Procedure salir(){
+        if(esperando > 0){
+            esperando--;
+            signal(cola);
+        }
+        else{
+            libre = True;
+        }
+    }
+}

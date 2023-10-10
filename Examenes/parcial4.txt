@@ -1,0 +1,80 @@
+MONITORES.
+Una boletería vende E entradas para un partido, y hay P personas (P>E) que quieren comprar. 
+Se las atiende por orden de llegada y la función vender() simula la venta. 
+La boletería debe informarle a la persona que no hay más entradas disponibles o devolverle el número de entrada si pudo hacer la compra.
+
+Process Persona[id:1..P]{
+    bool aux;
+    int entrada;
+
+    Boleteria.llegar(aux);
+    if(aux){
+        Boleteria.salir(entrada);
+    }
+}
+
+Monitor Estadio{
+    int entradas = E, cant = 0 ;
+    cond cola;
+    bool libre = True;
+
+    Procedure llegar(out bool entrada){
+        if(entradas > 0){
+            if(!libre){
+                cant++;
+                wait(cola);
+            }
+            libre = False;
+            entrada = True;
+        }
+        else{
+            entrada = False;
+        }
+    }
+
+    Procedure salir(out int num){
+        num = entradas;
+        entradas--;
+        if(cant > 0){
+            cant--;
+            signal(cola);
+        }
+        else{
+            libre = True;
+        }
+    }
+}
+
+MONITORES.
+Por un puente turístico puede pasar sólo un auto a la vez. Hay N autos que quieren pasar (función pasar()) y lo hacen por orden de llegada.
+
+Process Auto[id:1..N]{
+    Puente.pasar;
+    Puente.salir;
+}
+
+Monitor Puente{
+    cond cola;
+    int cant = 0;
+    bool libre = True;
+
+    Procedure pasar(){
+        if(!libre){
+            cant ++;
+            wait(cola);
+        }
+        else{
+            libre = False;
+        }
+    }
+
+    Procedure salir(){
+        if(cant > 0){
+            cant--;
+            signal(cola);
+        }
+        else{
+            libre = True;
+        }
+    }
+}

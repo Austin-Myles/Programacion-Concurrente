@@ -1,0 +1,42 @@
+Resolver con MONITORES el siguiente problema. En una planta verificadora de vehículos existen 5
+estaciones de verificación. Hay 75 vehículos que van para ser verificados, cada uno conoce el número de
+estación a la cual debe ir. Cada vehículo se dirige a la estación correspondiente y espera a que lo atiendan.
+Una vez que le entregan el comprobante de verificación, el vehículo se retira. Considere que en cada estación
+se atienden a los vehículos de acuerdo con el orden de llegada. Nota: maximizar la concurrencia.
+
+Process Vehiculo[id:1..75]{
+    int num = numeroEstación;
+    Recibo recibo;
+
+    Planta[num].entrar;
+    Planta[num].salir(recibo);
+
+}
+
+Monitor Planta[id:1..5]{
+    cond espera;
+    int cant= 0;
+    bool libre = True;
+    cola procesos;
+
+    Procedure entrar(int id){
+        if(!libre){
+            cant++;
+            wait(espera);
+        }
+        else{
+            libre = False;
+        }
+    }
+
+    Process salir(var recibo){
+        recibo = recibirRecibo();
+        if(cant>0){
+            cant--;
+            signal(espera);
+        }
+        else{
+            libre = True;
+        }
+    }
+}
