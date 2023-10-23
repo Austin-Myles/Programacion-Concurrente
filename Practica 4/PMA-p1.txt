@@ -1,0 +1,103 @@
+Suponga que N clientes llegan a la cola de un banco y que serán atendidos por sus empleados. 
+Analice el problema y defina qué procesos, recursos y comunicaciones serán necesarios/convenientes para resolver el problema. 
+Luego, resuelva considerando las siguientes situaciones:
+
+a. Existe un único empleado, el cual atiende por orden de llegada.
+
+chan Atencion(texto);
+
+Process Empleado{
+    text aux;
+
+    while(True){
+        receive Atencion(aux);
+        atender(aux);
+    }
+}
+
+Process Cliente[id:1..N]{
+    text aux;
+    aux = generarPedido();
+
+    send Atencion(aux);
+}
+
+b. Ídem a. pero considerando que hay 2 empleados para atender, ¿qué debe modificarse en la solución anterior?
+
+chan Atencion(texto);
+
+Process Empleado[id:1..2]{
+    text aux;
+
+    while(True){
+        receive Atencion(aux);
+        atender(aux);
+    }
+}
+
+Process Cliente[id:1..N]{
+    text aux;
+    aux = generarPedido();
+
+    send Atencion(aux);
+}
+
+c. Ídem b. pero considerando que, si no hay clientes para atender, 
+los empleados realizan tareas administrativas durante 15 minutos. ¿Se puede resolver sin usar procesos adicionales?
+¿Qué consecuencias implicaría?
+
+chan Atencion(texto);
+
+Process Empleado[id:1..2]{
+    text aux;
+
+    while(True){
+        if(!empty(Atencion)){
+            receive Atencion(aux);
+            atender(aux);
+        }
+        else{
+            delay(900); //15 minutitos
+        }
+    }
+}
+
+Process Cliente[id:1..N]{
+    text aux;
+    aux = generarPedido();
+
+    send Atencion(aux);
+}
+
+//Podria usarse un proceso coordinador para evitar la posible demora innecesaria que puede ocurrir.
+
+chan Pedido(int);
+chan Siguiente(text)
+
+Process Empleado[id:1..2]{
+    text aux;
+
+    while(True){
+        send(Pedido(id))
+        if(!empty(Siguiente)){
+            receive Siguiente(aux);
+            atender(aux);
+        }
+        else{
+            delay(900); //15 minutitos
+        }
+    }
+}
+
+Process Coordinador{
+    text aux;
+    int idE;
+
+    while(True){
+        receive Pedido(idE);
+        if(!empty(Atencion)){
+            receive Atencion(aux);
+            send Siguiente(aux);
+        }
+    }
+}
