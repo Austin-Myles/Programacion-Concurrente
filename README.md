@@ -7,7 +7,7 @@
 # Practica 3
 [Ejercicios P3](https://github.com/Austin-Myles/Programacion-Concurrente/tree/e83818227047a81ce1961093bc57aec735b120ab/Practica%203)
 # Practica 4
-[Ejercicios P4](https://github.com/Austin-Myles/Programacion-Concurrente/tree/e83818227047a81ce1961093bc57aec735b120ab/Practica%204)
+[Ejercicios P4](https://github.com/Austin-Myles/Programacion-Concurrente/tree/main/Practica%204)
 # Primer Parcial
 [Ejercicios de Parcial](https://github.com/Austin-Myles/Programacion-Concurrente/tree/e83818227047a81ce1961093bc57aec735b120ab/Examenes)
 
