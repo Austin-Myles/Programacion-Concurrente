@@ -7,3 +7,21 @@ están o no infectados.
 a. Analice  el  problema  y  defina  qué  procesos,  recursos  y  comunicaciones  serán 
 necesarios/convenientes para resolver el problema. 
 b. Implemente una solución con PMS
+
+Process Analizador{
+    String virus,resolución;
+
+    while(True){
+        Examinador?avisar(virus);
+        resolución = ProbarInfeccion(virus);
+    }
+}
+
+Process Examinador[id:1..R]{
+    String virus;
+
+    while(True){
+        virus = encontrarSitioInfectado();
+        Analizador!avisar(virus);
+    }
+}

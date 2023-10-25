@@ -1,0 +1,38 @@
+En  una  exposición  aeronáutica  hay  un  simulador  de  vuelo  (que  debe  ser  usado  con 
+exclusión  mutua)  y  un  empleado  encargado  de  administrar  su  uso.  Hay  P  personas  que 
+esperan  a  que  el  empleado  lo  deje  acceder  al  simulador,  lo  usa  por  un  rato  y  se  retira.  El 
+empleado  deja  usar  el simulador  a  las  personas  respetando  el  orden  de  llegada.  Nota: cada 
+persona usa sólo una vez el simulador.   
+
+Process Admin{
+    cola Fila;
+    int idE;
+
+    do Persona[*]?turno(idAux) -> Fila(idAux);
+    □  Fila.empty(); Empleado?pedido() -> idE = Fila.pop();
+                                                Admin!turno(idE);
+    od
+    }
+
+
+Process Empleado{
+    int idAux;
+
+    for(int i=0; i < N; i++){
+        
+        Admin!pedido();
+        Admin?turno(idAux);
+
+        Persona[idAux]!pase();
+        Persona[*]?termine();
+    }   
+}
+
+Process Persona[id:1..N]{
+    
+    Admin!turno(id);
+    Empleado?pase();
+    //La usa y al terminar
+    Empleado!termine();
+}
+

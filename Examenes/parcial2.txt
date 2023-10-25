@@ -14,7 +14,7 @@ Process Paciente[id:1..P]{
     int med;
 
     Guardia.acudir(gravedad, med);
-    Atencion[med].atenderse(gravedad);
+    Atencion[med].atenderse(id,gravedad);
     
 }
 
@@ -46,14 +46,37 @@ Monitor Guardia{
 
 
 Process Medico[id:1..5]{
-
+    while(True){
+        Atencion[id].atender;
+    }
 }
 
 Monitor Atencion[id:1..5]{
     cond cola[P];
-    int pacientes[P] = ([P],0);
+    colaOrdenada fila;
     bool libre = True;
-    int espera = 0;
+    int espera = 0, idAux;
 
+    Procedure atenderse(id, gravedad){
+        if(!libre){
+            insertar(fila,id,gravedad);
+            espera++;
+            wait(cola[id]);
+        }
+        else{
+            libre = False;
+        }
+    }
 
+    Procedure atender(){
+        //Se atiende al paciente
+        if(espera > 0){
+            espera--;
+            idAux = sacar(fila);
+            signal(idAux);
+        }
+        else{
+            libre = True;
+        }
+    }
 }
