@@ -30,3 +30,5 @@ Process Cliente[id:1..P]{
     receive Atencion[id](nro);
     send Pago[nro](saldo);
 }
+
+//Agregar un coordinador que anote la cantidad de personas en cada caja
