@@ -50,3 +50,5 @@ Process Cliente[id:1..C]{
     send Pedidos(pedido, id);
     receive Entrega(comida);
 }
+
+//agregar un coordinador 
