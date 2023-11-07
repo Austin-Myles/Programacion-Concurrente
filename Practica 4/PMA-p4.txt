@@ -8,43 +8,39 @@ Nota:
 maximizar la concurrencia; 
 suponga que hay una función  Cobrar() llamada por el empleado que simula que el empleado le cobra al cliente.
 
+
 chan Llegada(int);
-chan Respuesta[N](int);
-chan Pagar(int);
-chan Retirarse[N]();
+chan Cabina[1..N](int);
 
 Process Empleado{
-
-    cola cabinasAux; //Se dispone de la cola cargada
-    int idAux, cabina;
-    Ticket factura;
+    cola cabinas; //Se dispone
+    int idC, cab;
+    String ticket;
 
     while(True){
-        if(cabinasAux.empty()){
-            receive Pagar(idAux,cabina);
-            factura = Cobrar(cabina);
-            cabinasAux.push(cabina);
-            send Retirarse[idAux](factura);
+        if(!empty(Salida)){
+            receive Salida(id,cab);
+            cabinas.push(cab);
+            ticket = generarTicket();
+            send Ticket[id](ticket);
         }
-        receive Llegada(idAux);
-        cabina = cabinasAux.pop();
-        send Respuesta[idAux](cabina);
-        receive Pagar(idAux,cabina);
-        factura = Cobrar(cabina);
-        cabinasAux.push(cabina);
-        send Retirarse[idAux](factura);
+        if(!cabina.empty){
+            if(!empty(Llegada)){
+                receive Llegada(idC);
+                cab = cabinas.pop();
+                send Cabina[idC](cab);
+            }
+        }
     }
 }
 
 Process Cliente[id:1..N]{
-    int idCab;
-    Ticket factura;
+    int cab;
+    String ticket;
 
     send Llegada(id);
-    receive Respuesta[id](idCab);
-    usarCabina(idCab);
-    send Pagar(id,idCab);
-    receive Retirarse(factura);
+    receive Cabina[id](cab);
+    usarCabina(cab);
+    send Salida(id,cab);
+    receive Ticket[id](ticket);
 }
-
-//Ponele...

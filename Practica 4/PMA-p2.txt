@@ -3,32 +3,50 @@ Existen P clientes que desean hacer un pago. Para esto, cada una selecciona la c
 una vez seleccionada, espera a ser atendido. En cada caja, los clientes son atendidos por orden de llegada por los cajeros. 
 Luego del pago, se les entrega un comprobante. Nota: maximizando la concurrencia.
 
-chan Pago[1..5](id,saldo);
-chan Seleccionado[1..5](id);;
-chan Atencion[1..P](id);
+chan Llegada(int);
+chan Caja[1..P](int);
+chan Espera[1..5](int, String);
+chan Atencion[1..P](int);
+chan Libre[1..5](int);
 
-Process Caja[id:1..5]{
+Process Cajero[id:1..5]{
     int idC;
-    int aux;
-    while(true){
-        receive Seleccionado[id](idC);
-        send Atencion[idC](id);
-        receive Pago[id](aux);
-
-        realizarPago(aux);
+    String tramite, comprobante;
+    
+    while(True){
+        receive Espera[id](idC, tramite);
+        comprobante = Atender(tramite);
+        send Atencion[idC](comprobante);
+        send Libre[id](id);
     }
 }
 
 Process Cliente[id:1..P]{
+    int auxCaja;
+    String comprobante;
+
+    send Llegada(id);
+    receive Caja[id](auxCaja);
+    send Espera[auxCaja](id, tramite);
+    receive Atencion[id](comprobante);
     
-    int saldo; //Se dispone
-
-    //Selecciona la caja con menos personas
-
-    int nro = obtenerCajaMenor();
-    send Seleccionado[nro](id);
-    receive Atencion[id](nro);
-    send Pago[nro](saldo);
 }
 
-//Agregar un coordinador que anote la cantidad de personas en cada caja
+Process Coordinador{
+    int cantCaja[5] = ([5]0);
+    int idC, aux;
+
+    while(True){
+        if(!empty(Libre)){
+            receive Libre(aux);
+            cantCaja[aux]--;
+        }
+        if(!empty(Llegada)){
+            receive Llegada(idC);
+            aux = obtenerCajaMenor(cantCaja);
+            send Caja[idC](aux);
+            cantCaja[aux]++;
+        }
+    }
+
+}
