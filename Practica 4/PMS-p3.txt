@@ -1,6 +1,7 @@
-En  un  examen  final  hay  N  alumnos  y  P  profesores.  Cada  alumno  resuelve  su  examen,  lo 
-entrega  y  espera  a  que  alguno  de  los  profesores  lo  corrija  y  le  indique  la  nota.  Los 
-profesores corrigen los exámenes respetando el orden en que los alumnos van entregando.  
+En  un  examen  final  hay  N  alumnos  y  P  profesores.  
+Cada  alumno  resuelve  su  examen,  lo  entrega  y  espera  a  que  alguno  de  los  profesores  lo  corrija  y  
+le  indique  la  nota.  
+Los profesores corrigen los exámenes respetando el orden en que los alumnos van entregando.  
 a. Considerando que P=1. 
 b. Considerando que P>1. 
 c. Ídem  b.  pero  considerando  que  los  alumnos  no  comienzan  a  realizar  su  examen  hasta 
@@ -9,125 +10,123 @@ Nota: maximizar la concurrencia y no generar demora innecesaria.
 
 a.
 
+Process Admin{
+    cola buffer;
+    string examen;
+    int id;
+
+    do Alumno[*]?entrega(examen,id) --> buffer.push(examen,id);
+    0   !empty(buffer);     Profesor?pedido() -->
+                Profesor!entrega(buffer.pop());
+    od;
+}
+
 Process Profesor{
-    Examen examen;
-    int resultado ,idAux;
+    string examen;
+    int id;
 
-    for(int i=0; i<N; i++){
+    while(True){
         Admin!pedido();
-        Admin?enviar(idAux,examen);
-        resultado = CorregirExamen(examen);
-        Alumno[idAux]!nota(resultado);
-    }
+        Admin?entrega(examen,id);
 
+        nota = corregirExamen(examen);
+        Alumno[id]!nota(nota);
+    }  
 }
 
 Process Alumno[id:1..N]{
-    Examen examen; //Se dispone
+
+    String examen;
     int nota;
 
-    //Se hace el examen
-    Admin!Entregar(id,examen);
+    examen = realizarExamen();
+    Admin!entrega(examen,id);
     Profesor?nota(nota);
-}
-
-Process Admin{
-    cola Examenes;
-    Examen examen;
-    int idAux;
-
-    do Alumno[*]?Entregar(idAux,examen){Examenes.push(idAux,examen)}
-    □ not !Examenes.empty; 
-        Profesor?pedido() ->Examenes.pop(idAux,examen)
-                            Profesor!enviar(idAux,examen);
-    od
 }
 
 b.
 
+Process Admin{
+    cola buffer;
+    string examen;
+    int id,idP;
+
+    do Alumno[*]?entrega(examen,id) --> buffer.push(examen,id);
+    0   !empty(buffer);     Profesor[*]?pedido(idP) -->
+                Profesor[idP]!entrega(buffer.pop());
+    od;
+}
+
 Process Profesor[id:1..P]{
-    Examen examen;
-    int resultado ,idAux;
+    string examen;
+    int idC;
 
-    for(int i=0; i<N; i++){
+    while(True){
         Admin!pedido(id);
-        Admin?enviar(idAux,examen);
-        resultado = CorregirExamen(examen);
-        Alumno[idAux]!nota(resultado);
-    }
+        Admin?entrega(examen,idC);
 
+        nota = corregirExamen(examen);
+        Alumno[idC]!nota(nota);
+    }  
 }
 
 Process Alumno[id:1..N]{
-    Examen examen; //Se dispone
+
+    String examen;
     int nota;
 
-    //Se hace el examen
-    Admin!Entregar(id,examen);
+    examen = realizarExamen();
+    Admin!entrega(examen,id);
     Profesor[*]?nota(nota);
-}
-
-Process Admin{
-    cola Examenes;
-    Examen examen;
-    int idAux, idP;
-
-    do Alumno[*]?Entregar(idAux,examen){Examenes.push(idAux,examen)}
-    □ not !Examenes.empty; 
-        Profesor[*]?pedido(idP) ->Examenes.pop(idAux,examen)
-                            Profesor[idP]!enviar(idAux,examen);
-    od
 }
 
 c.
 
-Process Entrada{
-    int cant;
-    do Alumno[*]?llegada() -> cant++;
-    □ cant == N; Profesor[*]?espera -> for(int i; i < P; i++){
-                        Profesor[*]?espera
-                        }  
-                        for(int i; i < N){
-                            Alumno[i]!comenzar();
-                        }
-    od 
-}
+Process AdminLlegada{
+    int cant=0;
 
-Process Profesor[id:1..P]{
-    Examen examen;
-    int resultado ,idAux;
+    do cant < N; Alumno[*]?llegue() --> cant++;
+    O  cant = 80; Alumno[*]?llegue() --> for(int i=0; i<N; i++){
+                                                Alumno[i]!empiecen();
+                                        }
+    od
 
-    Entrada!espera();
-
-    for(int i=0; i<N; i++){
-        Admin!pedido(id);
-        Admin?enviar(idAux,examen);
-        resultado = CorregirExamen(examen);
-        Alumno[idAux]!nota(resultado);
-    }
-
-}
-
-Process Alumno[id:1..N]{
-    Examen examen; //Se dispone
-    int nota;
-
-    Entrada!llegada();
-    Entrada?comenzar();
-
-    //Se hace el examen
-    Admin!Entregar(id,examen);
-    Profesor[*]?nota(nota);
 }
 
 Process Admin{
-    cola Examenes;
-    Examen examen;
-    int idAux, idP;
+    cola buffer;
+    string examen;
+    int id,idP;
 
-    do Alumno[*]?Entregar(idAux,examen){Examenes.push(idAux,examen)}
-    □ not !Examenes.empty; 
-        Profesor[*]?pedido(idP) ->Examenes.pop(idAux,examen)
-                            Profesor[idP]!enviar(idAux,examen);
-    od
+    do Alumno[*]?entrega(examen,id) --> buffer.push(examen,id);
+    0   !empty(buffer);     Profesor[*]?pedido(idP) -->
+                Profesor[idP]!entrega(buffer.pop());
+    od;
 }
+
+Process Profesor[id:1..P]{
+    string examen;
+    int idC;
+
+    while(True){
+        Admin!pedido(id);
+        Admin?entrega(examen,idC);
+
+        nota = corregirExamen(examen);
+        Alumno[idC]!nota(nota);
+    }  
+}
+
+Process Alumno[id:1..N]{
+
+    String examen;
+    int nota;
+
+    AdminLlegada!llegue();
+    AdminLlegada?empiecen();
+
+    examen = realizarExamen();
+    Admin!entrega(examen,id);
+    Profesor[*]?nota(nota);
+}
+

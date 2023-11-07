@@ -5,34 +5,30 @@ empleado  deja  usar  el simulador  a  las  personas  respetando  el  orden  de 
 persona usa sólo una vez el simulador.   
 
 Process Admin{
-    cola Fila;
-    int idE;
+    cola buffer;
+    int id;
 
-    do Persona[*]?turno(idAux) -> Fila(idAux);
-    □  Fila.empty(); Empleado?pedido() -> idE = Fila.pop();
-                                                Admin!turno(idE);
-    od
-    }
+    do Persona[*]?encolar(id) --> buffer.push(id);
+    O !buffer.empty(); --> Empleado?atención();
+                            Empleado!turno(id);
 
-
-Process Empleado{
-    int idAux;
-
-    for(int i=0; i < N; i++){
-        
-        Admin!pedido();
-        Admin?turno(idAux);
-
-        Persona[idAux]!pase();
-        Persona[*]?termine();
-    }   
 }
 
-Process Persona[id:1..N]{
-    
-    Admin!turno(id);
-    Empleado?pase();
-    //La usa y al terminar
-    Empleado!termine();
+Process Empleado{
+    int id;
+
+    while(True){
+        Admin!atención();
+        Admin?turno(id);
+        Persona[id]!usar();
+        Persona[*]?salida();
+    }
+}
+
+Process Persona[id:1..P]{
+
+    Admin!encolar(id);
+    Empleado?usar();
+    Empleado!salida();
 }
 
