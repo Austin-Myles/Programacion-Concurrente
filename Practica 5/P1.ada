@@ -63,7 +63,13 @@ Begin
         Puente.Camion();
     end if; 
 
-    Puente.Salida;
+    if(tipo = "Auto")then
+        Puente.Salida(1); 
+    elif(tipo = "Camioneta")
+        Puente.Salida(2);
+    else
+        Puente.Salida(3);
+    end if; 
 
 End Vehiculo;
 
