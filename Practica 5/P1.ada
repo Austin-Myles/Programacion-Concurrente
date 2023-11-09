@@ -13,9 +13,9 @@ b. Modifique la solución para que tengan mayor prioridad los camiones que el re
 Procedure nombre is
 
 Task Puente is
-    Entry Auto(P: IN INT);
-    Entry Camioneta(P: IN INT);
-    Entry Camion(P: IN INT);
+    Entry Auto();
+    Entry Camioneta();
+    Entry Camion();
     Entry Salida(P: IN INT);
 end Puente;
 
@@ -27,37 +27,40 @@ Task Body Puente is
 Begin
     loop
         SELECT
-            when(cant + P < 5) =>
-                accept Auto(P: IN INT)do
-                    cant + P;
+            when(cant + 1 < 5) =>
+                accept Auto() do
+                    cant + 1;
                 end Auto;
         OR
-            when(cant + P < 5) =>
-                accept Camioneta(P: IN INT)do
-                    cant + P;
+            when(cant + 2 < 5) =>
+                accept Camioneta() do
+                    cant + 2;
                 end Camioneta;
         OR
-            when(cant + P < 5) =>
-                accept Camion(P: IN INT)do
-                    cant + P;
+            when(cant + 3 < 5) =>
+                accept Camion() do
+                    cant + 3;
                 end Camion;
+        OR
+            Accept Salida(P: IN INT)do
+                cant - P;
+            end Salida;
         END SELECT;
-        Accept Salida(P: IN INT)do
-            cant - P;
-        end Salida;
     end loop;
 
 End Puente;
 
 Task Body Vehiculo is
 
+tipo : String;
+
 Begin
-    if("Auto")then
-        Puente.Auto(1);  
-    elif("Camioneta")
-        Puente.Camioneta(2);
+    if(tipo = "Auto")then
+        Puente.Auto();  
+    elif(tipo = "Camioneta")
+        Puente.Camioneta();
     else
-        Puente.Camion(3);
+        Puente.Camion();
     end if; 
 
     Puente.Salida;
@@ -66,5 +69,5 @@ End Vehiculo;
 
 
 Begin
-
+    null;
 End nombre;

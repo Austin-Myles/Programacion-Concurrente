@@ -11,3 +11,17 @@ finalizar  cada  persona  debe  conocer  el  grupo  que  más  dinero  junto.  N
 concurrencia.  Suponga  que  para  simular  la  búsqueda  de  una  moneda  por  parte  de  una 
 persona existe una función Moneda() que retorna el valor de la moneda encontrada.
 */
+
+Procedure P6 is
+
+Task type Persona is
+End Persona;
+
+Task Body Persona is
+End Persona;
+
+
+Body
+
+
+End P6;

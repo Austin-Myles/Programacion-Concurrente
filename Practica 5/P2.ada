@@ -7,7 +7,6 @@ Los clientes llegan y si esperan más de 10 minutos se retiran sin realizar el p
 
 Procedure P2 is
 
-
     Task Empleado is
         Entry Pedido (D: IN texto; R: OUT texto);
     End empleado;
